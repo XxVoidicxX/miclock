@@ -9,7 +9,13 @@ Some apps lower your mic level on their own while you talk. Chrome, Edge and Ele
 - Windows 10 or 11
 - [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) (to run), or the .NET 10 SDK (to build)
 
-## Build
+## Download
+
+Get `MicLock.exe` from the [latest release](https://github.com/XxVoidicxX/miclock/releases/latest). There's no installer. Put the exe in a folder you'll keep, such as `C:\Tools\MicLock`, and run it.
+
+If Windows SmartScreen warns about an unknown app, click **More info**, then **Run anyway**. The exe isn't code signed.
+
+## Build from source
 
 ```
 git clone https://github.com/XxVoidicxX/miclock.git
