@@ -5,7 +5,7 @@ namespace MicLock;
 sealed class Settings
 {
     public string DeviceId { get; set; }
-    public int Level { get; set; } = 93;
+    public int Level { get; set; } = -1; // -1 until first run picks up the mic's current level
     public bool Enabled { get; set; } = true;
 
     static readonly string FilePath = Path.Combine(

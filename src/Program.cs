@@ -18,6 +18,13 @@ static class Program
             return;
         }
 
+        if (args.Length == 1 && args[0] == "--pick-level")
+        {
+            // Opens the Custom level box on its own, for checking how it looks.
+            LevelDialog.Ask(80);
+            return;
+        }
+
         Application.Run(new TrayApp());
     }
 }

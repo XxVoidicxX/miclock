@@ -13,7 +13,7 @@ sealed class TrayApp : ApplicationContext
 {
     const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
     const string RunValue = "MicLock";
-    static readonly int[] Presets = { 80, 85, 90, 93, 95, 100 };
+    static readonly int[] Presets = { 50, 60, 70, 80, 90, 100 };
 
     readonly Settings settings = Settings.Load();
     readonly MMDeviceEnumerator enumerator = new();
@@ -61,6 +61,12 @@ sealed class TrayApp : ApplicationContext
             deviceName = device.FriendlyName;
             volume = device.AudioEndpointVolume;
             volume.OnVolumeNotification += OnVolumeChanged;
+            if (settings.Level < 0)
+            {
+                // First run: lock whatever level the mic is at right now.
+                settings.Level = Percent(volume.MasterVolumeLevelScalar);
+                settings.Save();
+            }
             Enforce();
         }
         UpdateTray();
@@ -93,12 +99,10 @@ sealed class TrayApp : ApplicationContext
             return null;
         }
 
-        var all = enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active).ToList();
-        var pick = all.FirstOrDefault(d => d.FriendlyName.Contains("Realtek", StringComparison.OrdinalIgnoreCase));
-        if (pick == null && enumerator.HasDefaultAudioEndpoint(DataFlow.Capture, Role.Console))
-            pick = enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
-        foreach (var d in all) if (!ReferenceEquals(d, pick)) d.Dispose();
-        return pick;
+        // First run: the Windows default mic.
+        return enumerator.HasDefaultAudioEndpoint(DataFlow.Capture, Role.Console)
+            ? enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console)
+            : null;
     }
 
     // ---- enforcement ----
@@ -112,7 +116,7 @@ sealed class TrayApp : ApplicationContext
 
     void Enforce()
     {
-        if (!settings.Enabled || volume == null) return;
+        if (!settings.Enabled || volume == null || settings.Level < 0) return;
         try
         {
             int current = Percent(volume.MasterVolumeLevelScalar);
@@ -186,7 +190,7 @@ sealed class TrayApp : ApplicationContext
         };
         menu.Items.Add(enabled);
 
-        var level = new ToolStripMenuItem($"Level ({settings.Level}%)");
+        var level = new ToolStripMenuItem(settings.Level < 0 ? "Level (not set)" : $"Level ({settings.Level}%)");
         if (volume != null)
         {
             int now = Percent(volume.MasterVolumeLevelScalar);
@@ -201,6 +205,14 @@ sealed class TrayApp : ApplicationContext
             item.Click += (_, _) => SetLevel(p);
             level.DropDownItems.Add(item);
         }
+        bool custom = settings.Level >= 0 && !Presets.Contains(settings.Level);
+        var customItem = new ToolStripMenuItem(custom ? $"Custom ({settings.Level}%)..." : "Custom...") { Checked = custom };
+        customItem.Click += (_, _) =>
+        {
+            int start = settings.Level >= 0 ? settings.Level : 80;
+            if (LevelDialog.Ask(start) is int picked) SetLevel(picked);
+        };
+        level.DropDownItems.Add(customItem);
         menu.Items.Add(level);
 
         var devices = new ToolStripMenuItem("Microphone");

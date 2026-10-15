@@ -29,8 +29,10 @@ This creates `dist\MicLock.exe`. Put it wherever you want to keep it.
 
 1. Run `MicLock.exe`. A mic icon shows up in the tray. It may be hidden under the `^` arrow.
 2. Click the icon to open the menu.
-3. Under **Microphone**, pick the mic to lock. On first run it picks a Realtek mic if there is one, otherwise your default mic.
-4. Under **Level**, pick a level. To use your own value, pause the lock, set the slider in Sound settings, then choose **Use current level**.
+On first run MicLock locks your Windows default mic at whatever level it's set to right now. Set your mic level the way you like it before the first launch, or change it afterwards:
+
+- **Microphone:** pick which mic to lock.
+- **Level:** pick a preset, choose **Custom...** to type any number from 1 to 100, or choose **Use current level** after setting the slider in Sound settings with the lock paused.
 
 | Icon | Meaning |
 | --- | --- |
